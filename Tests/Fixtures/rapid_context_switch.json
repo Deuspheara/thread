@@ -1,0 +1,497 @@
+{
+  "schemaVersion": 1,
+  "name": "rapid_context_switch",
+  "synthetic": true,
+  "purpose": "Historical contexts update membership without rapidly switching active work",
+  "epoch": 1704067200,
+  "steps": [
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000001"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/A",
+              "terminalApplication": null,
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000002"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 1,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/A/.git"
+                    },
+                    "rootPath": "/fixture/A",
+                    "gitDirectory": "/fixture/A/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 3,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "repository": "/fixture/A",
+          "branch": "fix"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 10,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000004"
+        },
+        "timestamp": 725760010,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/B",
+              "terminalApplication": null,
+              "sequence": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 10,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000005"
+        },
+        "timestamp": 725760010,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 2,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/B/.git"
+                    },
+                    "rootPath": "/fixture/B",
+                    "gitDirectory": "/fixture/B/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 11,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000006"
+        },
+        "timestamp": 725760011,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/C",
+              "terminalApplication": null,
+              "sequence": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 11,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000007"
+        },
+        "timestamp": 725760011,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 3,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/C/.git"
+                    },
+                    "rootPath": "/fixture/C",
+                    "gitDirectory": "/fixture/C/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 12,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000008"
+        },
+        "timestamp": 725760012,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/A",
+              "terminalApplication": null,
+              "sequence": 4
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 12,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000009"
+        },
+        "timestamp": 725760012,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 4,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/A/.git"
+                    },
+                    "rootPath": "/fixture/A",
+                    "gitDirectory": "/fixture/A/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 13,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000a"
+        },
+        "timestamp": 725760013,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/B",
+              "terminalApplication": null,
+              "sequence": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 13,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000b"
+        },
+        "timestamp": 725760013,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 5,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/B/.git"
+                    },
+                    "rootPath": "/fixture/B",
+                    "gitDirectory": "/fixture/B/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 14,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000c"
+        },
+        "timestamp": 725760014,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/A",
+              "terminalApplication": null,
+              "sequence": 6
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 14,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000d"
+        },
+        "timestamp": 725760014,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 6,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/A/.git"
+                    },
+                    "rootPath": "/fixture/A",
+                    "gitDirectory": "/fixture/A/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 17,
+      "expect": {
+        "threads": 3,
+        "active": {
+          "repository": "/fixture/A",
+          "branch": "fix"
+        },
+        "membership": "existing"
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000f"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/B",
+              "terminalApplication": null,
+              "sequence": 7
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000010"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 7,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/B/.git"
+                    },
+                    "rootPath": "/fixture/B",
+                    "gitDirectory": "/fixture/B/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 26,
+      "expect": {
+        "threads": 3,
+        "active": {
+          "repository": "/fixture/B",
+          "branch": "fix"
+        },
+        "membership": "existing"
+      }
+    }
+  ]
+}

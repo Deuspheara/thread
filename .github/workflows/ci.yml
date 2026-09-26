@@ -1,0 +1,13 @@
+name: Swift foundation
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Boundaries, builds, and focused tests
+        run: scripts/check.sh
+      - name: Assemble development app
+        run: scripts/build-app.sh

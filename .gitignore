@@ -1,0 +1,45 @@
+.DS_Store
+.build/
+.swiftpm/
+build/
+*.xcuserstate
+xcuserdata/
+# Root resolution is the application's canonical lockfile.
+Packages/*/Package.resolved
+
+__pycache__/
+*.pyc
+
+# Backend secrets stay local.
+Backend/.env*
+!Backend/.env.example
+Backend/thread-api.env
+
+# Local environment files, credentials and runtime records must never be staged.
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+*.mobileprovision
+*.sqlite*
+*.db
+*.log
+*.zip
+*.dmg
+*.pkg
+*.app/
+*.framework/
+
+# Backend build outputs and installed dependencies.
+Backend/node_modules/
+Backend/dist/
+
+# Keep engineering notes and documentation private on this machine.
+/docs/
+*.md
+# This generic product guide is required by the app packaging and Getting started action.
+!ThreadApp/Resources/Setup.md

@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "name": "ambiguous_context",
+  "synthetic": true,
+  "purpose": "Documentation shared across two projects remains ambiguous after repository evidence expires",
+  "epoch": 1704067200,
+  "steps": [
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000001"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/A",
+              "terminalApplication": null,
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000002"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 1,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/A/.git"
+                    },
+                    "rootPath": "/fixture/A",
+                    "gitDirectory": "/fixture/A/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 1,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000003"
+        },
+        "timestamp": 725760001,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/shared",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 4,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "repository": "/fixture/A",
+          "branch": "fix"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000005"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/B",
+              "terminalApplication": null,
+              "sequence": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000006"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 2,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/B/.git"
+                    },
+                    "rootPath": "/fixture/B",
+                    "gitDirectory": "/fixture/B/.git",
+                    "branch": "fix",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 21,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000007"
+        },
+        "timestamp": 725760021,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/shared",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 26,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/B",
+          "branch": "fix"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 70,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000009"
+        },
+        "timestamp": 725760070,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/shared",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 73,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/B",
+          "branch": "fix"
+        },
+        "membership": "undetermined"
+      }
+    },
+    {
+      "at": 91,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000b"
+        },
+        "timestamp": 725760091,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/shared",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 94,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/B",
+          "branch": "fix"
+        },
+        "membership": "undetermined"
+      }
+    }
+  ]
+}

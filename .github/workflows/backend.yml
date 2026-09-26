@@ -1,0 +1,39 @@
+name: Backend decisions
+on:
+  push:
+    paths: ['Backend/**', 'scripts/package-backend.py', 'scripts/check-backend-runtime.py', 'scripts/check-backend-container.py', '.github/workflows/backend.yml']
+  pull_request:
+    paths: ['Backend/**', 'scripts/package-backend.py', 'scripts/check-backend-runtime.py', 'scripts/check-backend-container.py', '.github/workflows/backend.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: Backend/package-lock.json
+      - name: Install disposable Redis test dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y redis-server
+      - name: Contract, transport and shared allowance
+        working-directory: Backend
+        run: |
+          npm ci --ignore-scripts
+          npm run typecheck
+          npm run lint
+          npm test
+          npm run build
+      - name: TypeScript API lifecycle
+        run: python3 scripts/check-backend-runtime.py
+      - name: Build runtime image
+        run: docker build -t thread-api-check Backend
+      - name: Isolated container lifecycle and Compose
+        run: python3 scripts/check-backend-container.py
+      - name: Package public source
+        run: python3 scripts/package-backend.py

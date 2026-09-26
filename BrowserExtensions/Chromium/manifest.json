@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Thread Context",
+  "version": "0.1.0",
+  "description": "Share normal browser tab metadata with the local Thread app.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApA1gLgCG2/DUh3qHhFyvfgwr5yquokmjhYiGUABJY5yz2wsKNqMrHVCKDv/pxj/qxOvw/9rp3PeP+MN3T7BKD7U+5p4kXjFV/PSCPGYD8mGICKytGF2XgGy4BtTX6CH1oFJvTfVAcSNSHCgk6PTii+GMQzC/qDupTfhsGrVm+qtZHHe2AqiF1PJWQvvS7e4sio5IVLVdZ7KU2akJpmb6AA8h1Do+pdp3UXS4/b/m3oTUt7S3vKNHN0h28JA+jMXYLNqSOq9zW8gY778ai2EIVpELVhsblCFpLbtx6HI+UcB1ayUE+JZYSn+LOGp8+RIcgTIZYsUxAIVWm0ZLEIoeBwIDAQAB",
+  "permissions": [
+    "tabs",
+    "nativeMessaging"
+  ],
+  "incognito": "not_allowed",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Reconnect Thread"
+  }
+}

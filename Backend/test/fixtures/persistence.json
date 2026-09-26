@@ -1,0 +1,1 @@
+{"schemaVersion":1,"requestID":"11223344-5566-7788-9900-aabbccddeeff","kind":"persistence","context":{"schemaVersion":1,"observedSeconds":45,"resources":[{"alias":"r0","kind":"repository","label":"homecontrol","observedSeconds":30}],"candidates":[]},"resourceAlias":"r0"}

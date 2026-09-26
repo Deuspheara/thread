@@ -1,0 +1,5 @@
+# Use only when the existing cloudflared process runs directly on the VPS host.
+services:
+  api:
+    ports:
+      - "127.0.0.1:8787:8787"

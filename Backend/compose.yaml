@@ -1,0 +1,61 @@
+name: thread-api
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: ./thread-api.env
+    environment:
+      THREAD_API_HOST: 0.0.0.0
+      THREAD_API_PORT: "8787"
+      THREAD_REDIS_URL: redis://rate-store:6379/0
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    stop_grace_period: 7s
+    depends_on:
+      rate-store:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, dist/main.js, healthcheck]
+      interval: 30s
+      timeout: 2s
+      start_period: 5s
+      retries: 3
+    networks:
+      decisions:
+        aliases: [thread-api]
+      rate-state:
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+  rate-store:
+    image: redis:7.4-alpine
+    command: [redis-server, --save, "", --appendonly, "no", --maxmemory, 64mb, --maxmemory-policy, noeviction]
+    restart: unless-stopped
+    read_only: true
+    user: redis
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    pids_limit: 32
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+    networks: [rate-state]
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+networks:
+  decisions:
+    name: thread-decisions
+  rate-state:
+    internal: true

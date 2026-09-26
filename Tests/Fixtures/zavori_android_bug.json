@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "name": "zavori_android_bug",
+  "synthetic": true,
+  "purpose": "Multisource project convergence and return to the original Thread",
+  "epoch": 1704067200,
+  "steps": [
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000001"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/Zavori",
+              "terminalApplication": null,
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000002"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 1,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/Zavori/.git"
+                    },
+                    "rootPath": "/fixture/Zavori",
+                    "gitDirectory": "/fixture/Zavori/.git",
+                    "branch": "fix/android-notifications",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000003"
+        },
+        "timestamp": 725760000.2,
+        "source": {
+          "rawValue": "workspace"
+        },
+        "kind": {
+          "applicationActivated": {
+            "_0": {
+              "identity": {
+                "bundleIdentifier": "fixture.editor"
+              },
+              "name": "Fixture Editor",
+              "processIdentifier": 2,
+              "launchDate": 725760000
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000004"
+        },
+        "timestamp": 725760000.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "accessibilityPermissionChanged": {
+            "_0": "granted"
+          }
+        }
+      }
+    },
+    {
+      "at": 0.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000005"
+        },
+        "timestamp": 725760000.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "windowFocused": {
+            "_0": {
+              "identity": {
+                "rawValue": "00000000-0000-0000-0000-00000000012e"
+              },
+              "application": {
+                "identity": {
+                  "bundleIdentifier": "fixture.editor"
+                },
+                "name": "Fixture Editor",
+                "processIdentifier": 2,
+                "launchDate": 725760000
+              },
+              "title": "Notifications.kt",
+              "frame": {
+                "x": 0,
+                "y": 0,
+                "width": 800,
+                "height": 600
+              },
+              "document": {
+                "path": "/fixture/Zavori/Notifications.kt"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 1,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000006"
+        },
+        "timestamp": 725760001,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/android",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 4,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "repository": "/fixture/Zavori",
+          "branch": "fix/android-notifications"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000008"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/CardGame",
+              "terminalApplication": null,
+              "sequence": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000009"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 2,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/CardGame/.git"
+                    },
+                    "rootPath": "/fixture/CardGame",
+                    "gitDirectory": "/fixture/CardGame/.git",
+                    "branch": "rendering",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000a"
+        },
+        "timestamp": 725760020.2,
+        "source": {
+          "rawValue": "workspace"
+        },
+        "kind": {
+          "applicationActivated": {
+            "_0": {
+              "identity": {
+                "bundleIdentifier": "fixture.editor"
+              },
+              "name": "Fixture Editor",
+              "processIdentifier": 3,
+              "launchDate": 725760000
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000b"
+        },
+        "timestamp": 725760020.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "accessibilityPermissionChanged": {
+            "_0": "granted"
+          }
+        }
+      }
+    },
+    {
+      "at": 20.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000c"
+        },
+        "timestamp": 725760020.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "windowFocused": {
+            "_0": {
+              "identity": {
+                "rawValue": "00000000-0000-0000-0000-00000000012f"
+              },
+              "application": {
+                "identity": {
+                  "bundleIdentifier": "fixture.editor"
+                },
+                "name": "Fixture Editor",
+                "processIdentifier": 3,
+                "launchDate": 725760000
+              },
+              "title": "Renderer.swift",
+              "frame": {
+                "x": 0,
+                "y": 0,
+                "width": 800,
+                "height": 600
+              },
+              "document": {
+                "path": "/fixture/CardGame/Renderer.swift"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 26,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/CardGame",
+          "branch": "rendering"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 40,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000e"
+        },
+        "timestamp": 725760040,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/Zavori",
+              "terminalApplication": null,
+              "sequence": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 40,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-00000000000f"
+        },
+        "timestamp": 725760040,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 3,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/Zavori/.git"
+                    },
+                    "rootPath": "/fixture/Zavori",
+                    "gitDirectory": "/fixture/Zavori/.git",
+                    "branch": "fix/android-notifications",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 40.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000010"
+        },
+        "timestamp": 725760040.2,
+        "source": {
+          "rawValue": "workspace"
+        },
+        "kind": {
+          "applicationActivated": {
+            "_0": {
+              "identity": {
+                "bundleIdentifier": "fixture.editor"
+              },
+              "name": "Fixture Editor",
+              "processIdentifier": 2,
+              "launchDate": 725760000
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 40.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000011"
+        },
+        "timestamp": 725760040.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "accessibilityPermissionChanged": {
+            "_0": "granted"
+          }
+        }
+      }
+    },
+    {
+      "at": 40.2,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000012"
+        },
+        "timestamp": 725760040.2,
+        "source": {
+          "rawValue": "ax"
+        },
+        "kind": {
+          "windowFocused": {
+            "_0": {
+              "identity": {
+                "rawValue": "00000000-0000-0000-0000-00000000012e"
+              },
+              "application": {
+                "identity": {
+                  "bundleIdentifier": "fixture.editor"
+                },
+                "name": "Fixture Editor",
+                "processIdentifier": 2,
+                "launchDate": 725760000
+              },
+              "title": "Notifications.kt",
+              "frame": {
+                "x": 0,
+                "y": 0,
+                "width": 800,
+                "height": 600
+              },
+              "document": {
+                "path": "/fixture/Zavori/Notifications.kt"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 46,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/Zavori",
+          "branch": "fix/android-notifications"
+        },
+        "membership": "existing"
+      }
+    }
+  ]
+}

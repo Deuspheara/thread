@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "name": "browser_research_switch",
+  "synthetic": true,
+  "purpose": "Brief research waits, sustained research creates work, neutral private focus cannot create a Thread",
+  "epoch": 1704067200,
+  "steps": [
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000001"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/research",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 3,
+      "expect": {
+        "threads": 0,
+        "active": null,
+        "membership": "undetermined"
+      }
+    },
+    {
+      "at": 21,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000003"
+        },
+        "timestamp": 725760021,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://docs.example.com/research",
+              "domain": "docs.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 24,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "browserURL": "https://docs.example.com/research"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 25,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000005"
+        },
+        "timestamp": 725760025,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserTabActivated": {
+            "_0": {
+              "identity": {
+                "connection": {
+                  "rawValue": "00000000-0000-0000-0000-0000000000c9"
+                },
+                "tab": 1
+              },
+              "browser": "chrome",
+              "window": 1,
+              "url": "https://search.example.com/",
+              "domain": "search.example.com",
+              "title": "Synthetic documentation",
+              "isActive": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 28,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "browserURL": "https://docs.example.com/research"
+        },
+        "membership": "existing"
+      }
+    },
+    {
+      "at": 29,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000007"
+        },
+        "timestamp": 725760029,
+        "source": {
+          "rawValue": "browser"
+        },
+        "kind": {
+          "browserFocusCleared": {
+            "_0": {
+              "rawValue": "00000000-0000-0000-0000-0000000000c9"
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 30,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000008"
+        },
+        "timestamp": 725760030,
+        "source": {
+          "rawValue": "workspace"
+        },
+        "kind": {
+          "applicationActivated": {
+            "_0": {
+              "identity": {
+                "bundleIdentifier": "com.google.Chrome"
+              },
+              "name": "Chrome",
+              "processIdentifier": 10,
+              "launchDate": 725760000
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 33,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "browserURL": "https://docs.example.com/research"
+        },
+        "membership": "undetermined"
+      }
+    }
+  ]
+}

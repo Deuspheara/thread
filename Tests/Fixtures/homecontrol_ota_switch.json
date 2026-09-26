@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "name": "homecontrol_ota_switch",
+  "synthetic": true,
+  "purpose": "Same repository on different branches must form separate work and reuse prior identities",
+  "epoch": 1704067200,
+  "steps": [
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000001"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/HomeControl",
+              "terminalApplication": null,
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 0,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000002"
+        },
+        "timestamp": 725760000,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "repositoryChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 1,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/HomeControl/.git"
+                    },
+                    "rootPath": "/fixture/HomeControl",
+                    "gitDirectory": "/fixture/HomeControl/.git",
+                    "branch": "fix/ota-reconnect",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 3,
+      "expect": {
+        "threads": 1,
+        "active": {
+          "repository": "/fixture/HomeControl",
+          "branch": "fix/ota-reconnect"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000004"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/HomeControl",
+              "terminalApplication": null,
+              "sequence": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 20,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000005"
+        },
+        "timestamp": 725760020,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "branchChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 2,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/HomeControl/.git"
+                    },
+                    "rootPath": "/fixture/HomeControl",
+                    "gitDirectory": "/fixture/HomeControl/.git",
+                    "branch": "feature/dashboard",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 26,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/HomeControl",
+          "branch": "feature/dashboard"
+        },
+        "membership": "new"
+      }
+    },
+    {
+      "at": 40,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000007"
+        },
+        "timestamp": 725760040,
+        "source": {
+          "rawValue": "shell"
+        },
+        "kind": {
+          "terminalDirectoryChanged": {
+            "_0": {
+              "session": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "processIdentifier": 1,
+              "workingDirectory": "/fixture/HomeControl",
+              "terminalApplication": null,
+              "sequence": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 40,
+      "event": {
+        "id": {
+          "rawValue": "00000000-0000-0000-0000-000000000008"
+        },
+        "timestamp": 725760040,
+        "source": {
+          "rawValue": "git"
+        },
+        "kind": {
+          "branchChanged": {
+            "_0": {
+              "terminal": {
+                "rawValue": "00000000-0000-0000-0000-000000000065"
+              },
+              "sequence": 3,
+              "resolution": {
+                "available": {
+                  "_0": {
+                    "identity": {
+                      "commonDirectory": "/fixture/HomeControl/.git"
+                    },
+                    "rootPath": "/fixture/HomeControl",
+                    "gitDirectory": "/fixture/HomeControl/.git",
+                    "branch": "fix/ota-reconnect",
+                    "head": null,
+                    "dirty": {
+                      "changedTrackedFiles": 0,
+                      "conflictedFiles": 0,
+                      "isApproximate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 46,
+      "expect": {
+        "threads": 2,
+        "active": {
+          "repository": "/fixture/HomeControl",
+          "branch": "fix/ota-reconnect"
+        },
+        "membership": "existing"
+      }
+    }
+  ]
+}
