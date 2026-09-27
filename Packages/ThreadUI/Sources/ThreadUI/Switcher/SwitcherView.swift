@@ -55,7 +55,6 @@ public struct SwitcherView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 2) {
-                    if model.loading { ProgressView().controlSize(.small).padding(12) }
                     if model.failed { Text("Saved history search is unavailable. Try again.").foregroundStyle(.secondary).padding(16) }
                     if model.shortcutUnavailable { Text("Option–Space is unavailable. Open Thread from the menu bar.").font(.caption).padding(8) }
                     if model.rows.isEmpty && !model.loading && !model.failed {
@@ -73,26 +72,61 @@ public struct SwitcherView: View {
                     }
                 }.padding(8)
             }
+            .overlay(alignment: .topTrailing) {
+                if model.loading {
+                    ProgressView().controlSize(.small).padding(12)
+                        .accessibilityLabel("Searching Threads")
+                }
+            }
             .onChange(of: model.selection) { if let id = model.selection { proxy.scrollTo(id) } }
         }
         .frame(maxHeight: .infinity)
+        .transaction { $0.animation = nil }
     }
     private var actionBar: some View {
-        HStack(spacing: 12) {
-            Button { activate() } label: { Label("Resume", systemImage: "return") }
-                .disabled(model.selection == nil || model.loading || restoration.busy)
+        HStack(spacing: 10) {
+            Button("Details") { if let id = model.selection { details(id) } }
+                .keyboardShortcut("i").buttonStyle(.plain)
+                .disabled(model.selection == nil)
             if let message = restoration.message {
-                Text(message).lineLimit(1).help(message)
+                Text(message).lineLimit(1).frame(maxWidth: 260, alignment: .leading).help(message)
             }
             Spacer(minLength: 4)
             if !restoration.items.isEmpty {
-                Button("Issues") { restoration.showingOutcomes = true }
+                Button("Issues") { restoration.showingOutcomes = true }.buttonStyle(.plain)
             }
-            Button("⌘I Details") { if let id = model.selection { details(id) } }.keyboardShortcut("i")
-            Button("⌘K Actions") { if let id = model.selection { actions(id) } }.keyboardShortcut("k")
+            glassActions
         }
-        .buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(.secondary)
-        .padding(.horizontal, 18).frame(height: 36)
+        .font(.system(size: 11))
+        .padding(.horizontal, 12).frame(height: 48)
+    }
+    private var glassActions: some View {
+        HStack(spacing: 8) {
+            Button(action: activate) {
+                HStack(spacing: 9) {
+                    Text("Resume").fontWeight(.semibold)
+                    shortcut("↩")
+                }
+            }
+            .disabled(model.selection == nil || model.loading || restoration.busy)
+            .threadActionButton(prominent: true)
+            Button { if let id = model.selection { actions(id) } } label: {
+                HStack(spacing: 9) {
+                    Text("Actions")
+                    shortcut("⌘K")
+                }
+            }
+            .keyboardShortcut("k")
+            .disabled(model.selection == nil)
+            .threadActionButton()
+        }
+        .threadGlassActionGroup()
+    }
+    private func shortcut(_ value: String) -> some View {
+        Text(value).font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 5).frame(height: 18)
+            .background(.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 5))
     }
     private func activate() {
         guard !restoration.busy, !model.loading, let id = model.selection else { return }

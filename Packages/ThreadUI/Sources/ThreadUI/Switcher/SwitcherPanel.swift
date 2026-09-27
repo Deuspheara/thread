@@ -9,6 +9,7 @@ public final class SwitcherPanel: NSObject, NSWindowDelegate {
     private let detail: ThreadDetailModel
     private let restoration: ThreadRestoreModel
     private var panel: NSPanel?
+    private var lastOrigin: NSPoint?
     private var overlayPresented = false
     public init(model: SwitcherModel, detail: ThreadDetailModel, restoration: ThreadRestoreModel) {
         self.model = model; self.detail = detail; self.restoration = restoration
@@ -25,13 +26,15 @@ public final class SwitcherPanel: NSObject, NSWindowDelegate {
         detail.presented = false
         if panel == nil { createPanel() }
         installContent()
-        panel?.center()
+        if let lastOrigin { panel?.setFrameOrigin(lastOrigin) }
+        else { panel?.center() }
         NSApp.activate(ignoringOtherApps: true)
         panel?.makeKeyAndOrderFront(nil)
         model.focusRequest += 1
     }
     public func close() {
         guard let closing = panel else { return }
+        lastOrigin = closing.frame.origin
         panel = nil
         overlayPresented = false
         detail.observingActions = false
@@ -58,6 +61,7 @@ public final class SwitcherPanel: NSObject, NSWindowDelegate {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
+        panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
         panel.level = .floating
         panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
@@ -94,8 +98,6 @@ private struct PanelContent: View {
     let resize: (Bool) -> Void
     let overlay: (Bool) -> Void
     @State private var showingActions = false
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.colorSchemeContrast) private var contrast
     var body: some View {
         Group {
             if detail.presented {
@@ -105,12 +107,7 @@ private struct PanelContent: View {
                     actions: { id in detail.prepareActions(id); showingActions = true }, dismiss: dismiss)
             }
         }
-        .background {
-            if reduceTransparency { Color(nsColor: .windowBackgroundColor) }
-            else { Rectangle().fill(.regularMaterial) }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay { RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(contrast == .increased ? 0.55 : 0.12), lineWidth: 1) }
+        .threadPanelSurface()
         .onChange(of: detail.presented) { resize(detail.presented) }
         .onChange(of: showingActions) {
             detail.observingActions = showingActions

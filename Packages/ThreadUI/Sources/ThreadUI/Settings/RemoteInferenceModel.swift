@@ -6,6 +6,7 @@ import ThreadDomain
 @MainActor @Observable
 public final class RemoteInferenceModel {
     public var enabled = false
+    public private(set) var savedEnabled = false
     public var endpointText = ""
     public var credentialText = ""
     public private(set) var busy = false
@@ -53,7 +54,7 @@ public final class RemoteInferenceModel {
         guard !busy else { return }
         busy = true; enabled = false; credentialText = ""
         defer { busy = false }
-        do { try await disable(); message = "Remote inference stopped. Local matching continues." }
+        do { try await disable(); savedEnabled = false; message = "Remote inference stopped. Local matching continues." }
         catch { explain(error) }
     }
 
@@ -61,12 +62,13 @@ public final class RemoteInferenceModel {
         guard !busy else { return }
         busy = true; enabled = false; credentialText = ""
         defer { busy = false }
-        do { try await forget(); credential = .notStored; message = "Saved credential removed. Inference is local." }
+        do { try await forget(); savedEnabled = false; credential = .notStored; message = "Saved credential removed. Inference is local." }
         catch { explain(error) }
     }
 
     private func display(_ state: RemoteInferenceState) {
         enabled = state.preferences.enabled
+        savedEnabled = state.preferences.enabled
         endpointText = state.preferences.endpoint?.absoluteString ?? ""
         credential = state.credential
         credentialText = ""

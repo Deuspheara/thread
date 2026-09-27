@@ -18,13 +18,16 @@ struct SwitcherRow: View {
                 Text(context).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 8)
-            if current {
-                Label("Current", systemImage: "circle.inset.filled").font(.system(size: 10, weight: .medium))
-            } else if row.isArchived {
-                Text("Archived").font(.system(size: 11)).foregroundStyle(.secondary)
-            } else {
-                Text(row.lastActive, style: .relative).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+            Group {
+                if current {
+                    Label("Current", systemImage: "circle.inset.filled").font(.system(size: 10, weight: .medium))
+                } else if row.isArchived {
+                    Text("Archived").font(.system(size: 11)).foregroundStyle(.secondary)
+                } else {
+                    Text(row.lastActive, style: .relative).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                }
             }
+            .frame(width: 112, alignment: .trailing)
         }
         .padding(.horizontal, 10).frame(height: 57)
         .background(selected ? Color.primary.opacity(contrast == .increased ? 0.18 : 0.08) : .clear,

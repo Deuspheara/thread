@@ -6,30 +6,44 @@ public struct RemoteInferenceView: View {
     public init(model: RemoteInferenceModel) { self.model = model }
 
     public var body: some View {
-        Section("Remote inference") {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Remote inference").font(.system(size: 12, weight: .semibold))
             Toggle("Use remote inference for ambiguous activity", isOn: $model.enabled)
+                .toggleStyle(.switch)
+                .tint(Color(red: 0.65, green: 0.34, blue: 0.68))
                 .disabled(model.busy)
-            Text("Changes apply when saved. Stop takes effect immediately.").font(.caption).foregroundStyle(.secondary)
-            Text("When enabled, minimized application identifiers, repository/file names, branches and domains go to your Thread backend and OpenRouter. Local matching remains available.")
+            Text("Optional. Thread works offline without this. When enabled, minimized app and work labels go to your Thread backend and OpenRouter.")
                 .font(.caption).foregroundStyle(.secondary)
-            TextField("HTTPS decision endpoint", text: $model.endpointText)
-                .disabled(model.busy)
-            SecureField("New Thread session token", text: $model.credentialText)
-                .disabled(model.busy)
-            Text("Leave the token blank to keep the credential for this exact endpoint. Your OpenRouter key belongs on the backend.")
-                .font(.caption).foregroundStyle(.secondary)
-            if model.credential == .stored { Text("A credential is saved for the loaded endpoint.").font(.caption) }
-            if model.credential == .unavailable { Text("Saved credential availability could not be checked.").font(.caption) }
-            HStack {
-                Button("Save configuration") { Task { await model.apply() } }
+            if model.enabled {
+                TextField("HTTPS decision endpoint", text: $model.endpointText)
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(model.busy)
+                SecureField("Thread session token", text: $model.credentialText)
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(model.busy)
+                Text("Leave the token blank to keep the saved credential for this endpoint. The provider key stays on your backend.")
+                    .font(.caption).foregroundStyle(.secondary)
+                if model.credential == .stored { Label("Credential saved", systemImage: "checkmark.circle").font(.caption) }
+                if model.credential == .unavailable { Text("Saved credential availability could not be checked.").font(.caption) }
+                Button("Save and enable") { Task { await model.apply() } }
+                    .threadActionButton(prominent: true).disabled(model.busy)
+            } else if model.savedEnabled {
                 Button("Stop remote inference") { Task { await model.stop() } }
-            }.disabled(model.busy)
-            HStack {
-                Button("Remove credential for saved endpoint", role: .destructive) { Task { await model.removeCredential() } }
-                Button("Reload") { Task { await model.reload() } }
-            }.disabled(model.busy)
+                    .threadActionButton().disabled(model.busy)
+            }
+            DisclosureGroup("Credential and connection options") {
+                HStack {
+                    Button("Remove saved credential", role: .destructive) { Task { await model.removeCredential() } }
+                        .threadActionButton()
+                    Button("Reload settings") { Task { await model.reload() } }
+                        .threadActionButton()
+                }.disabled(model.busy)
+            }
             if let message = model.message { Text(message).font(.caption).accessibilityLabel(message) }
         }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 12))
         .task { await model.reload() }
     }
 }

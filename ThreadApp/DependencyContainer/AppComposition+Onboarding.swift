@@ -21,15 +21,8 @@ extension AppComposition {
         #endif
         let authorization = AccessibilityAuthorization()
         let resources = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
-        let sender = Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/ThreadShellSend").path
-        let hook = resources.appendingPathComponent("thread.zsh").path
-        let shellSetup = "export THREAD_SHELL_SENDER=" + shellQuote(sender) + "\nsource " + shellQuote(hook)
-        return OnboardingModel(complete: complete, shellSetup: shellSetup, remember: { try completion.complete() }, start: start,
+        return OnboardingModel(complete: complete, remember: { try completion.complete() }, start: start,
             readPermission: readPermission, refreshAccess: refreshAccess, requestAccess: requestAccess,
             openSettings: { authorization.openSettings() }, openGuide: { NSWorkspace.shared.open(resources.appendingPathComponent("Setup.md")) })
-    }
-
-    private static func shellQuote(_ value: String) -> String {
-        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 }

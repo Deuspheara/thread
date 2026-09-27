@@ -13,7 +13,8 @@ struct ThreadItemRow: View {
             Spacer(minLength: 4)
             Text(target.isProject ? "Project" : ThreadResumePlan.directory(target.resource) != nil ? "Directory" : label.kind(target.resource)).font(.system(size: 10)).foregroundStyle(.secondary)
             Menu { ThreadItemActions(resource: target.resource, model: model) } label: { Image(systemName: "ellipsis") }
-            .menuStyle(.borderlessButton).fixedSize().frame(width: 24, height: 28)
+            .menuStyle(.borderlessButton).menuIndicator(.hidden)
+            .fixedSize().frame(width: 24, height: 28)
             .accessibilityLabel("Actions for \(label.title(target.resource))")
         }
         .font(.system(size: 12)).frame(minHeight: 33)

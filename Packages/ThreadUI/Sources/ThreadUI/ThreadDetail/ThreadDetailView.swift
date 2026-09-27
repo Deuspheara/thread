@@ -33,7 +33,8 @@ public struct ThreadDetailView: View {
                                         }
                                     }
                                 } label: { Image(systemName: "ellipsis") }
-                                .menuStyle(.borderlessButton).fixedSize().frame(width: 24, height: 28)
+                                .menuStyle(.borderlessButton).menuIndicator(.hidden)
+                                .fixedSize().frame(width: 24, height: 28)
                                 .accessibilityLabel("Actions for \(group.application.name) items")
                             }
                             ForEach(group.targets, id: \.resource.id) { target in
@@ -98,10 +99,11 @@ public struct ThreadDetailView: View {
             Spacer()
             if let thread = model.selected?.thread {
                 Text(thread.lastActiveAt, style: .relative).font(.system(size: 11)).foregroundStyle(.secondary)
+                    .frame(width: 110, alignment: .trailing)
                 if let restoration {
                     Button("Resume") {
                         Task { await restoration.restore(thread.id, title: thread.title, plan: model.resumePlan) }
-                    }.buttonStyle(.plain).disabled(thread.isArchived || restoration.busy).keyboardShortcut(.defaultAction)
+                    }.threadActionButton(prominent: true).disabled(thread.isArchived || restoration.busy).keyboardShortcut(.defaultAction)
                 }
             }
             Button(action: openActions) { Image(systemName: "ellipsis").frame(width: 26, height: 32) }

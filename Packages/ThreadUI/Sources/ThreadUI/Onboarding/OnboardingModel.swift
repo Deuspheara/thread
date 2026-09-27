@@ -6,11 +6,10 @@ import ThreadDomain
 @Observable
 public final class OnboardingModel {
     public private(set) var hasStarted: Bool
-    public var permission: AccessibilityPermission { readPermission() }
+    public private(set) var permission: AccessibilityPermission = .notGranted
     public private(set) var rememberFailed = false
     public private(set) var settingsUnavailable = false
     public private(set) var guideUnavailable = false
-    public let shellSetup: String
     private let remember: @MainActor () throws -> Void
     private let start: @MainActor () -> Void
     private let readPermission: @MainActor () -> AccessibilityPermission
@@ -19,13 +18,12 @@ public final class OnboardingModel {
     private let openSettings: @MainActor () -> Bool
     private let openGuide: @MainActor () -> Bool
 
-    public init(complete: Bool, shellSetup: String, remember: @escaping @MainActor () throws -> Void,
+    public init(complete: Bool, remember: @escaping @MainActor () throws -> Void,
                 start: @escaping @MainActor () -> Void, readPermission: @escaping @MainActor () -> AccessibilityPermission,
                 refreshAccess: @escaping @MainActor () -> Void,
                 requestAccess: @escaping @MainActor () -> Void, openSettings: @escaping @MainActor () -> Bool,
                 openGuide: @escaping @MainActor () -> Bool) {
         hasStarted = complete
-        self.shellSetup = shellSetup
         self.remember = remember
         self.start = start
         self.readPermission = readPermission
@@ -33,6 +31,7 @@ public final class OnboardingModel {
         self.requestAccess = requestAccess
         self.openSettings = openSettings
         self.openGuide = openGuide
+        permission = readPermission()
     }
 
     public func begin() {
@@ -48,8 +47,8 @@ public final class OnboardingModel {
     }
 
     public func refreshPermission() {
-        guard hasStarted else { return }
-        refreshAccess()
+        permission = readPermission()
+        if hasStarted { refreshAccess() }
     }
     public func requestPermission() { requestAccess(); refreshPermission() }
     public func openPermissionSettings() { settingsUnavailable = !openSettings() }

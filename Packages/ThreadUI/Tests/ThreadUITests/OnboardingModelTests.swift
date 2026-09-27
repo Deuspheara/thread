@@ -39,7 +39,7 @@ struct OnboardingModelTests {
             prepareStorage: {}, refreshObservation: {}, requestAuthorization: {}, openAuthorizationSettings: { false })
         var refreshes = 0
         var requests = 0
-        let model = OnboardingModel(complete: false, shellSetup: "fixture", remember: {}, start: {},
+        let model = OnboardingModel(complete: false, remember: {}, start: {},
             readPermission: { state.context.permission }, refreshAccess: { refreshes += 1 },
             requestAccess: { requests += 1 }, openSettings: { false }, openGuide: { false })
         model.refreshPermission()
@@ -50,6 +50,7 @@ struct OnboardingModelTests {
         let changes = AsyncStream<Bool>.makeStream()
         withObservationTracking { _ = model.permission } onChange: { changes.continuation.yield(true) }
         state.update(CurrentContext(permission: .granted))
+        model.refreshPermission()
         changes.continuation.finish()
         var iterator = changes.stream.makeAsyncIterator()
         let change = await iterator.next()
@@ -59,7 +60,7 @@ struct OnboardingModelTests {
 
     private func make(complete: Bool, remember: @escaping @MainActor () throws -> Void,
                       start: @escaping @MainActor () -> Void) -> OnboardingModel {
-        OnboardingModel(complete: complete, shellSetup: "fixture", remember: remember, start: start,
+        OnboardingModel(complete: complete, remember: remember, start: start,
                         readPermission: { .notGranted }, refreshAccess: {}, requestAccess: {}, openSettings: { false }, openGuide: { false })
     }
 }

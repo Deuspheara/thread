@@ -10,17 +10,22 @@ struct AccessibilityPermissionView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Window access", systemImage: "lock.shield")
                 .font(.subheadline.weight(.semibold))
-            Text("Allow Accessibility access to read the focused window’s title and position. Application observation works without it.")
+            Text("Optional. Adds window titles and positions. macOS will ask you to approve access in System Settings.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack {
-                Button("Allow access", action: request)
-                Button("Settings…", action: openSettings)
-                Button("Check again", action: refresh)
+                Button("Request Access", action: request)
+                    .threadActionButton(prominent: true)
+                Button("Open System Settings", action: openSettings)
+                    .threadActionButton()
+                Button("Check Again", action: refresh)
+                    .threadActionButton()
             }
-            .controlSize(.small)
+            .threadGlassActionGroup()
+            .controlSize(.regular)
         }
-        .padding(12)
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.quaternary, in: RoundedRectangle(cornerRadius: 18))
     }
 }

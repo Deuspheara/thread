@@ -11,7 +11,9 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
         readPermission: { [weak self] in self?.runtime.model.context.permission ?? .unknown },
         refreshAccess: { [weak self] in self?.runtime.model.refresh() },
         requestAccess: { [weak self] in self?.runtime.model.requestPermission() })
-    private lazy var welcome = OnboardingWindow(model: onboarding)
+    private lazy var welcome = OnboardingWindow(model: onboarding, showSettings: { [weak self] in self?.showSettings() })
+    private lazy var settingsWindow = SettingsWindow(login: loginLaunch, exclusions: runtime.exclusions,
+                                                      remote: runtime.remoteInference)
     #if DEBUG
     private var launcherPreview: LauncherPreviewFixture?
     #endif
@@ -30,6 +32,7 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showOnboarding() { welcome.present() }
+    func showSettings() { settingsWindow.present() }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if AgentProbeLaunch.runIfRequested() { return }

@@ -55,6 +55,18 @@ struct SwitcherModelTests {
         #expect(model.selection == first.id)
     }
 
+    @Test func unchangedPublicationDoesNotRestartSelectedPreview() {
+        let model = SwitcherModel(search: DelayedSearch())
+        let time = Date(timeIntervalSince1970: 100)
+        let thread = ThreadDomain.Thread(id: ThreadID(rawValue: UUID()), title: "Fixture", createdAt: time, lastActiveAt: time)
+        let overview = ThreadPresentation(threads: [ThreadSummary(thread: thread, resourceCount: 1, applications: [])],
+                                          active: thread.id)
+        model.update(overview)
+        let revision = model.previewRevision
+        model.update(overview)
+        #expect(model.previewRevision == revision)
+    }
+
     @Test func aLatePreviewCannotOverwriteNewIntentForTheSameSelectedThread() async throws {
         let reading = DelayedPreview()
         let model = SwitcherModel(search: DelayedSearch(), reading: reading)
@@ -63,7 +75,9 @@ struct SwitcherModelTests {
         model.update(overview)
         let old = Task { await model.loadPreview() }
         await reading.waitForRequest(1)
-        model.update(overview)
+        let changed = ThreadPresentation(threads: [ThreadSummary(thread: reading.thread, resourceCount: 2, applications: [])],
+                                         active: reading.thread.id)
+        model.update(changed)
         let current = Task { await model.loadPreview() }
         await reading.waitForRequest(2)
         await reading.finish(0, application: "dev.zed.Zed")

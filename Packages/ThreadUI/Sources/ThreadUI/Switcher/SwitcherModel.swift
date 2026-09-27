@@ -36,12 +36,16 @@ public final class SwitcherModel {
     public init(search: any ThreadSearch, reading: (any ThreadReading)? = nil) { self.search = search; self.reading = reading }
 
     public func update(_ overview: ThreadPresentation) {
-        previewRevision += 1
+        let selectedBefore = recent.first { $0.id == selection }
         active = overview.active
         recent = overview.threads.filter { !$0.thread.isArchived }.map { detail in
             let names = detail.applications.joined(separator: " · ")
             return Row(id: detail.thread.id, isPinned: detail.thread.isPinned, isArchived: false, title: detail.thread.title, lastActive: detail.thread.lastActiveAt,
                        resourceCount: detail.resourceCount, applications: names, work: detail.work)
+        }
+        let selectedAfter = recent.first { $0.id == selection }
+        if selectedBefore?.resourceCount != selectedAfter?.resourceCount || selectedBefore?.work != selectedAfter?.work {
+            previewRevision += 1
         }
         if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { display(Array(recent.prefix(20))) }
     }
