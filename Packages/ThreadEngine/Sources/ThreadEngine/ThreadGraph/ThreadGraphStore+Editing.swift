@@ -12,6 +12,8 @@ extension ThreadGraphStore {
         case .pin(let id, let pinned): try pin(id, pinned: pinned)
         case .rename(let id, let title): try rename(id, title: title)
         case .archive(let id, let archived): try archive(id, archived: archived)
+        case .chooseApplication(let resource, let thread, let application):
+            try chooseApplication(resource, in: thread, application: application)
         case .reassign(let resource, let source, let target):
             return try reassignWithEvidence(resource, from: source, to: target, at: time)
         }
@@ -32,6 +34,9 @@ extension ThreadGraphStore {
             status: edge.status, source: source, target: target, decisionRecordID: edge.membershipRecordID)
         try reassign(ResourceEvidence(resource: edge.resource, firstSeen: edge.firstSeen,
             lastSeen: edge.lastSeen, source: edge.source), to: target)
+        let existingPreference = destination.resources.first { $0.resource.id == resource }?.restoreApplication
+        relationships[target]?[resource]?.restoreApplication = existingPreference?.origin == .explicit
+            ? existingPreference : edge.restoreApplication
         return record
     }
 }

@@ -13,37 +13,52 @@ public final class SwitcherModel {
         public let lastActive: Date
         public let resourceCount: Int
         public let applications: String
+        public let work: ThreadWorkSummary?
     }
     public var shortcutUnavailable = false
+    public var focusRequest = 0
     public var query = ""
     public var includeArchived = false
     public var selection: ThreadID?
     public private(set) var rows: [Row] = []
     public private(set) var loading = false
     public private(set) var failed = false
+    public private(set) var active: ThreadID?
+    public private(set) var previewRevision = 0
+    public private(set) var preview: ThreadResumePlan?
+    public private(set) var previewLoading = false
+    public private(set) var previewUnavailable = false
+    @ObservationIgnored private let reading: (any ThreadReading)?
     @ObservationIgnored private var recent: [Row] = []
     @ObservationIgnored private let search: any ThreadSearch
     @ObservationIgnored private var revision = 0
 
-    public init(search: any ThreadSearch) { self.search = search }
+    public init(search: any ThreadSearch, reading: (any ThreadReading)? = nil) { self.search = search; self.reading = reading }
 
     public func update(_ overview: ThreadPresentation) {
+        previewRevision += 1
+        active = overview.active
         recent = overview.threads.filter { !$0.thread.isArchived }.map { detail in
             let names = detail.applications.joined(separator: " · ")
             return Row(id: detail.thread.id, isPinned: detail.thread.isPinned, isArchived: false, title: detail.thread.title, lastActive: detail.thread.lastActiveAt,
-                       resourceCount: detail.resourceCount, applications: names)
+                       resourceCount: detail.resourceCount, applications: names, work: detail.work)
         }
         if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { display(Array(recent.prefix(20))) }
     }
 
     public func reset() {
         revision += 1
+        previewRevision += 1
+        previewLoading = false
+        previewUnavailable = false
         query = ""
         includeArchived = false
         loading = false
         failed = false
         selection = nil
         display(Array(recent.prefix(20)))
+        if rows.contains(where: { $0.id == active }) { selection = active }
+        preview = nil
     }
 
     public func refresh() async {
@@ -54,20 +69,39 @@ public final class SwitcherModel {
         failed = false
         guard !text.isEmpty else { loading = false; display(Array(recent.prefix(20))); return }
         loading = true
-        display([])
         do {
             try await Task.sleep(for: .milliseconds(150))
             let found = try await search.search(query: text, includeArchived: archived, limit: 30)
             guard request == revision, !Task.isCancelled else { return }
             display(found.map { result in
                 Row(id: result.id, isPinned: recent.first { $0.id == result.id }?.isPinned ?? false, isArchived: result.isArchived, title: result.title, lastActive: result.lastActiveAt, resourceCount: result.resourceCount,
-                    applications: recent.first { $0.id == result.id }?.applications ?? "")
+                    applications: recent.first { $0.id == result.id }?.applications ?? "", work: recent.first { $0.id == result.id }?.work)
             })
             loading = false
         } catch {
             guard request == revision else { return }
             loading = false
             failed = !Task.isCancelled
+        }
+    }
+
+    public func loadPreview() async {
+        let id = selection
+        let request = previewRevision
+        preview = nil
+        previewUnavailable = false
+        previewLoading = false
+        guard let id, let reading else { return }
+        previewLoading = true
+        defer { if selection == id, previewRevision == request { previewLoading = false } }
+        do {
+            let plan = try await reading.resumePlan(id)
+            guard selection == id, previewRevision == request, !Task.isCancelled else { return }
+            preview = plan
+            previewUnavailable = plan == nil
+        } catch {
+            guard selection == id, previewRevision == request, !Task.isCancelled else { return }
+            previewUnavailable = true
         }
     }
 

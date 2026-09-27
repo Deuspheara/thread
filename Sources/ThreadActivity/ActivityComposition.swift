@@ -21,7 +21,8 @@ public enum ActivityComposition {
         let shell = ShellActivitySource(url: directory.appendingPathComponent("Shell/activity.sock"))
         let git = GitActivitySource(upstream: shell)
         let safari = safariSource(bundle: appBundle)
-        let graph = ThreadGraphStore()
+        let directoryIdentity = DirectoryRestoreIdentity()
+        let graph = ThreadGraphStore(resumeDirectoryIdentity: { directoryIdentity.canonicalPath($0) })
         let decisionRecords = DecisionRecordBuffer(archive: database, onFailure: { failure in
             let logger = Logger(subsystem: "app.thread.desktop", category: "classification")
             switch failure {
@@ -74,17 +75,15 @@ public enum ActivityComposition {
             onTransitionApplication: { await transitions.record($0) },
             onResourceReassignment: { await reassignments.record($0) })
         let session = ObservationSession(exclusions: initialExclusions, onEvent: { await engine.ingest($0) })
-        var restorers: [any ResourceRestorer] = [ApplicationRestorer(), VSCodeRestorer(), FileRestorer(),
+        var restorers: [any ResourceRestorer] = [ApplicationRestorer(), FileRestorer(),
             BrowserTabRestorer(directory: directory.appendingPathComponent("Browser")), BrowserRestorer(),
             TerminalRestorer(), WindowRestorer()]
         if let safari, let group = appBundle.object(forInfoDictionaryKey: "ThreadAppGroupIdentifier") as? String,
            let endpoint = try? BrowserSocketLocation.safariURL(groupIdentifier: group) {
             restorers.insert(SafariTabRestorer(directory: endpoint.deletingLastPathComponent(),
-                extensionIdentifier: "app.thread.desktop.safari", connected: { safari.isConnected($0) }), at: 3)
+                extensionIdentifier: "app.thread.desktop.safari", connected: { safari.isConnected($0) }), at: 2)
         }
-        let directoryIdentity = DirectoryRestoreIdentity()
-        let restoration = ThreadRestoration(graph: graph, restorers: restorers, focus: engine,
-            directoryIdentity: { directoryIdentity.canonicalPath($0) })
+        let restoration = ThreadRestoration(graph: graph, restorers: restorers, focus: engine)
         let sources = ObservationSources(workspace: workspace, accessibility: accessibility, shell: shell, git: git,
             browser: BrowserActivitySource(url: directory.appendingPathComponent("Browser/activity.sock")), safari: safari)
         let activity = ActivityRuntime(sources: sources, session: session, engine: engine, reading: graph,

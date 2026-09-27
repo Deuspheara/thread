@@ -22,6 +22,9 @@ public enum ThreadGraphValidation {
                 guard edge.persistence == .durable, edge.confidence.isFinite, (0...1).contains(edge.confidence),
                       edge.firstSeen.timeIntervalSinceReferenceDate.isFinite, edge.lastSeen.timeIntervalSinceReferenceDate.isFinite,
                       edge.firstSeen <= edge.lastSeen else { throw ThreadGraphValidationError.invalidState }
+                if let app = edge.restoreApplication {
+                    guard edge.resource.kind == .file, app.isValid, app.origin != .fallback else { throw ThreadGraphValidationError.invalidState }
+                }
                 if edge.userCorrected {
                     guard corrections[edge.resource.id] == detail.thread.id, edge.status == .confirmed,
                           edge.confidence == 1, edge.membershipRecordID == nil else {

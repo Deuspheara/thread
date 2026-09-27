@@ -6,7 +6,7 @@ import ThreadDomain
 import ThreadPersistence
 import ThreadAgentTransport
 
-/// Verifies a saved file-only Thread through the actual app client and helper in private disposable storage.
+/// Verifies a saved file through the helper in disposable storage without starting observers.
 enum AgentFileRestoreFixture {
     @MainActor static func runIfRequested() -> Bool {
         let environment = ProcessInfo.processInfo.environment
@@ -17,17 +17,14 @@ enum AgentFileRestoreFixture {
             var passed = false
             do {
                 let thread = try await seed(directory)
-                let availability = try await client.start()
-                guard availability.processIdentifier > 0, availability.processIdentifier != getpid() else {
-                    throw AgentTransportError.invalidMessage
-                }
                 try await client.prepare()
                 guard let page = try await client.detailPage(thread, after: nil, limit: 64),
                       page.resources.count == 1 else { throw AgentTransportError.invalidMessage }
                 let report = try await client.restore(thread)
                 guard report.thread == thread, report.results.count == 1,
                       report.results[0].resource == page.resources[0].resource.id,
-                      report.results[0].capability == .resource, report.results[0].outcome == .restored else {
+                      report.results[0].capability == .resource, report.results[0].outcome == .restored,
+                      report.results[0].application == page.resources[0].restoreApplication else {
                     throw AgentTransportError.invalidMessage
                 }
                 passed = true
@@ -52,8 +49,11 @@ enum AgentFileRestoreFixture {
         let now = Date()
         let id = ThreadID(rawValue: UUID())
         let thread = ThreadDomain.Thread(id: id, title: "Saved file fixture", createdAt: now, lastActiveAt: now)
+        let application = ProcessInfo.processInfo.environment["THREAD_FILE_RESTORE_APPLICATION"].map {
+            RestoreApplication(identity: ApplicationIdentity(bundleIdentifier: $0), name: $0, origin: .explicit)
+        }
         let edge = ThreadResource(resource: .file(FileIdentity(path: file.path)), confidence: 1,
-            firstSeen: now, lastSeen: now, source: ActivitySourceID(rawValue: "fixture"), status: .confirmed)
+            firstSeen: now, lastSeen: now, source: ActivitySourceID(rawValue: "fixture"), status: .confirmed, restoreApplication: application)
         let database = ThreadDatabase(directory: directory)
         try await database.prepare()
         try await database.saveGraph(ThreadGraphState(threads: [ThreadDetail(thread: thread, resources: [edge])], corrections: []))

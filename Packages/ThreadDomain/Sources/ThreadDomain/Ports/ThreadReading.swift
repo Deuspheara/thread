@@ -14,10 +14,12 @@ public struct ThreadDetailPage: Codable, Sendable {
     public let resources: [ThreadResource]
     public let totalResourceCount: Int
     public let next: ResourceID?
-    public init(thread: Thread, resources: [ThreadResource], totalResourceCount: Int, next: ResourceID?) {
+    public let resumePlan: ThreadResumePlan?
+    public init(thread: Thread, resources: [ThreadResource], totalResourceCount: Int, next: ResourceID?, resumePlan: ThreadResumePlan? = nil) {
         self.thread = thread
         self.resources = resources
         self.totalResourceCount = totalResourceCount
         self.next = next
+        self.resumePlan = resumePlan
     }
 }

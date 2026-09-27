@@ -40,6 +40,9 @@ struct ThreadMergePlan {
         return ThreadResource(resource: latest.resource, confidence: confirmed ? confidence : max(existing.confidence, incoming.confidence),
                               firstSeen: min(existing.firstSeen, incoming.firstSeen), lastSeen: max(existing.lastSeen, incoming.lastSeen),
                               source: latest.source, status: corrected || confirmed ? .confirmed : .provisional,
-                              pinned: existing.pinned || incoming.pinned, userCorrected: corrected, persistence: persistence)
+                              pinned: existing.pinned || incoming.pinned, userCorrected: corrected, persistence: persistence,
+                              restoreApplication: existing.restoreApplication?.origin == .explicit ? existing.restoreApplication
+                                : incoming.restoreApplication?.origin == .explicit ? incoming.restoreApplication
+                                : latest.restoreApplication)
     }
 }

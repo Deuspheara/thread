@@ -16,6 +16,41 @@ struct ResourceLabel {
         }
     }
 
+    func title(_ id: ResourceID) -> String {
+        switch id {
+        case .file(let file): URL(fileURLWithPath: file.path).lastPathComponent
+        case .workingDirectory(let path): path
+        case .application(let app): app.bundleIdentifier
+        case .repository(let repository): repository.commonDirectory
+        case .branch(_, let name): name
+        case .window: "Existing window"
+        case .terminal: "Terminal directory"
+        case .browserPage(_, let url): url
+        }
+    }
+
+    func symbol(_ resource: Resource) -> String {
+        switch resource.kind {
+        case .file: "doc"
+        case .browserPage: "globe"
+        case .terminal: "terminal"
+        case .workingDirectory, .repository: "folder"
+        case .branch: "arrow.triangle.branch"
+        case .application: "app"
+        case .window: "macwindow"
+        }
+    }
+
+    func compactTitle(_ resource: Resource) -> String {
+        switch resource {
+        case .file(let file): URL(fileURLWithPath: file.path).lastPathComponent
+        case .repository(let repository): URL(fileURLWithPath: repository.rootPath).lastPathComponent
+        case .workingDirectory(let path): URL(fileURLWithPath: path).lastPathComponent
+        case .terminal(let terminal): URL(fileURLWithPath: terminal.workingDirectory).lastPathComponent
+        default: title(resource)
+        }
+    }
+
     func title(_ resource: Resource) -> String {
         switch resource {
         case .application(let value): value.name

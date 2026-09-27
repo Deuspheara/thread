@@ -1,95 +1,103 @@
 import SwiftUI
 import ThreadDomain
 
-/// Renders the compact keyboard-first Thread picker.
+/// Renders a quiet launcher with search, selection, an honest preview and keyboard actions.
 public struct SwitcherView: View {
     @Bindable private var model: SwitcherModel
     @FocusState private var searching: Bool
     private let restoration: ThreadRestoreModel
     private let details: (ThreadID) -> Void
+    private let actions: (ThreadID) -> Void
     private let dismiss: () -> Void
-
-    public init(model: SwitcherModel, restoration: ThreadRestoreModel, details: @escaping (ThreadID) -> Void, dismiss: @escaping () -> Void) {
-        self.model = model; self.restoration = restoration; self.details = details; self.dismiss = dismiss
+    public init(model: SwitcherModel, restoration: ThreadRestoreModel, details: @escaping (ThreadID) -> Void,
+                actions: @escaping (ThreadID) -> Void, dismiss: @escaping () -> Void) {
+        self.model = model; self.restoration = restoration; self.details = details; self.actions = actions; self.dismiss = dismiss
     }
-
-    private struct SearchRequest: Equatable {
-        let query: String
-        let includeArchived: Bool
-    }
-
+    private struct PreviewRequest: Equatable { let thread: ThreadID?; let revision: Int }
+    private struct SearchRequest: Equatable { let query: String; let includeArchived: Bool }
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Threads").font(.title2.weight(.semibold))
-            TextField("Search your work", text: $model.query)
-                .textFieldStyle(.plain).font(.title3).focused($searching)
-                .onSubmit { activate() }
-                .onKeyPress(.downArrow) { model.move(1); return .handled }
-                .onKeyPress(.upArrow) { model.move(-1); return .handled }
-                .onKeyPress(.escape) { dismiss(); return .handled }
-            if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Toggle("Include archived", isOn: $model.includeArchived)
-            }
-            Divider()
-            if model.loading { ProgressView().controlSize(.small) }
-            if model.failed { Text("Saved history search is unavailable.").foregroundStyle(.secondary) }
-            if !model.loading && !model.failed && model.rows.isEmpty {
-                Text(emptyMessage).foregroundStyle(.secondary)
-            }
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(spacing: 4) {
-                        ForEach(model.rows) { row in
-                            Button { model.selection = row.id; activate() } label: {
-                                VStack(alignment: .leading, spacing: 5) {
-                                    HStack {
-                                        if row.isPinned { Image(systemName: "pin.fill").accessibilityLabel("Pinned Thread") }
-                                        Text(row.title).font(.headline).lineLimit(1)
-                                    }
-                                    HStack {
-                                        Text(row.lastActive, style: .relative)
-                                        Text("· \(row.resourceCount) resources")
-                                        if row.isArchived { Text("· Archived") }
-                                    }.font(.caption).foregroundStyle(.secondary)
-                                    if !row.applications.isEmpty {
-                                        Text(row.applications).font(.caption).foregroundStyle(.secondary)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading).padding(12)
-                                .background(row.id == model.selection ? Color.accentColor.opacity(0.15) : Color.clear,
-                                            in: RoundedRectangle(cornerRadius: 8))
-                            }.buttonStyle(.plain).id(row.id)
-                            .disabled(restoration.busy)
-                            .contextMenu { Button("Details") { details(row.id) } }
-                        }
-                    }
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField("Search your work", text: $model.query)
+                    .textFieldStyle(.plain).font(.system(size: 16)).focused($searching)
+                    .onSubmit { activate() }
+                    .onKeyPress(.downArrow) { model.move(1); return .handled }
+                    .onKeyPress(.upArrow) { model.move(-1); return .handled }
+                if !model.query.isEmpty {
+                    Toggle("Archived", isOn: $model.includeArchived).toggleStyle(.checkbox).font(.caption)
+                        .help("Include archived Threads in search")
                 }
-                .onChange(of: model.selection) { if let id = model.selection { proxy.scrollTo(id) } }
+            }.padding(.horizontal, 18).frame(height: 49)
+            Divider()
+            results
+            Divider()
+            ResumePreview(model: model)
+            Divider()
+            actionBar
+        }
+        .frame(width: 620, height: 420)
+        .onChange(of: model.focusRequest, initial: true) {
+            searching = false
+            Task { @MainActor in
+                await Task.yield()
+                searching = true
             }
-            if let message = restoration.message { Text(message).font(.caption).foregroundStyle(.secondary) }
-            Text("Directories reopen in Terminal. Commands are never replayed.").font(.caption2).foregroundStyle(.secondary)
-            Text("↑ ↓ Select    ↩ Continue    esc Close").font(.caption).foregroundStyle(.secondary)
         }
-        .padding(20).frame(width: 520, height: 460)
-        .onAppear { searching = true }
         .onExitCommand(perform: dismiss)
+        .sheet(isPresented: Binding(get: { restoration.showingOutcomes }, set: { restoration.showingOutcomes = $0 })) {
+            ResumeOutcomesView(model: restoration)
+        }
         .task(id: SearchRequest(query: model.query, includeArchived: model.includeArchived)) { await model.refresh() }
+        .task(id: PreviewRequest(thread: model.selection, revision: model.previewRevision)) { await model.loadPreview() }
     }
-
-    private var emptyMessage: String {
-        if model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "No recent Threads. Work across related resources to build your context."
+    private var results: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 2) {
+                    if model.loading { ProgressView().controlSize(.small).padding(12) }
+                    if model.failed { Text("Saved history search is unavailable. Try again.").foregroundStyle(.secondary).padding(16) }
+                    if model.shortcutUnavailable { Text("Option–Space is unavailable. Open Thread from the menu bar.").font(.caption).padding(8) }
+                    if model.rows.isEmpty && !model.loading && !model.failed {
+                        Text(model.query.isEmpty ? "No recent Threads yet. Your related work will appear here." : "No matching Threads. Try another search or include archived work.")
+                            .font(.system(size: 13)).foregroundStyle(.secondary).padding(24)
+                    }
+                    ForEach(model.rows) { row in
+                        Button { model.selection = row.id; activate() } label: {
+                            SwitcherRow(row: row, selected: model.selection == row.id, current: model.active == row.id)
+                        }.buttonStyle(.plain).id(row.id).disabled(restoration.busy)
+                            .contextMenu {
+                                Button("Details") { details(row.id) }
+                                Button("Actions…") { actions(row.id) }
+                            }
+                    }
+                }.padding(8)
+            }
+            .onChange(of: model.selection) { if let id = model.selection { proxy.scrollTo(id) } }
         }
-        return model.includeArchived ? "No matching Threads. Try another search."
-            : "No matching Threads. Try another search or include archived work."
+        .frame(maxHeight: .infinity)
     }
-
+    private var actionBar: some View {
+        HStack(spacing: 12) {
+            Button { activate() } label: { Label("Resume", systemImage: "return") }
+                .disabled(model.selection == nil || model.loading || restoration.busy)
+            if let message = restoration.message {
+                Text(message).lineLimit(1).help(message)
+            }
+            Spacer(minLength: 4)
+            if !restoration.items.isEmpty {
+                Button("Issues") { restoration.showingOutcomes = true }
+            }
+            Button("⌘I Details") { if let id = model.selection { details(id) } }.keyboardShortcut("i")
+            Button("⌘K Actions") { if let id = model.selection { actions(id) } }.keyboardShortcut("k")
+        }
+        .buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(.secondary)
+        .padding(.horizontal, 18).frame(height: 36)
+    }
     private func activate() {
-        guard !restoration.busy, let id = model.selection else { return }
-        if model.rows.first(where: { $0.id == id })?.isArchived == true {
-            details(id)
-        } else {
-            Task { await restoration.restore(id) }
-        }
+        guard !restoration.busy, !model.loading, let id = model.selection else { return }
+        guard let row = model.rows.first(where: { $0.id == id }) else { return }
+        if row.isArchived { details(id) }
+        else { Task { await restoration.restore(id, title: row.title, plan: model.preview) } }
     }
 }

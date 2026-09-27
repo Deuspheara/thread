@@ -6,11 +6,17 @@ public enum ThreadGraphError: Error, Sendable { case unknownThread, archivedThre
 /// Owns graph mutations and ensures explicit user reassignment outranks later inference.
 public actor ThreadGraphStore {
     private var threads: [ThreadID: ThreadDomain.Thread] = [:]
-    private var relationships: [ThreadID: [ResourceID: ThreadResource]] = [:]
+    var relationships: [ThreadID: [ResourceID: ThreadResource]] = [:]
     private var corrections: [ResourceID: ThreadID] = [:]
+    let resumeDirectoryIdentity: @Sendable (String) -> String
     private let makeID: @Sendable () -> ThreadID
 
-    public init(makeID: @escaping @Sendable () -> ThreadID = { ThreadID(rawValue: UUID()) }) { self.makeID = makeID }
+    public init(makeID: @escaping @Sendable () -> ThreadID = { ThreadID(rawValue: UUID()) },
+                resumeDirectoryIdentity: @escaping @Sendable (String) -> String = {
+                    URL(fileURLWithPath: $0).standardizedFileURL.path
+                }) {
+        self.makeID = makeID; self.resumeDirectoryIdentity = resumeDirectoryIdentity
+    }
 
     public func checkpoint() -> ThreadGraphState {
         let overrides = corrections.map { ResourceCorrection(resource: $0.key, thread: $0.value) }.sorted {
@@ -60,7 +66,10 @@ public actor ThreadGraphStore {
             guard corrections[evidence.resource.id].map({ $0 == target }) ?? true else { continue }
             if update(evidence, thread: target, status: status, confidence: confidence,
                       persistence: persistence[evidence.resource.id] ?? .durable,
-                      membershipRecordID: membershipRecordID) { attached = true }
+                      membershipRecordID: membershipRecordID) {
+                retainObservedApplication(evidence, in: observed, thread: target)
+                attached = true
+            }
         }
         guard attached else { return nil }
         if status == .confirmed { thread.lastActiveAt = max(thread.lastActiveAt, context.endedAt) }
@@ -77,7 +86,7 @@ public actor ThreadGraphStore {
         }
         let resources = context.resources.filter { evidence in
             let edge = targetID.flatMap { relationships[$0]?[evidence.resource.id] }
-            return persistence[evidence.resource.id] != .discard || edge?.userCorrected == true || edge?.pinned == true
+            return persistence[evidence.resource.id] != .discard || edge?.userCorrected == true || edge?.pinned == true || edge?.restoreApplication?.origin == .explicit
         }
         return ActivityContext(startedAt: context.startedAt, endedAt: context.endedAt, resources: resources)
     }
@@ -85,7 +94,7 @@ public actor ThreadGraphStore {
     private func discardInferredResources(_ context: ActivityContext, thread: ThreadID,
                                           persistence: [ResourceID: PersistenceDisposition]) {
         for evidence in context.resources where persistence[evidence.resource.id] == .discard {
-            guard let edge = relationships[thread]?[evidence.resource.id], !edge.userCorrected, !edge.pinned,
+            guard let edge = relationships[thread]?[evidence.resource.id], !edge.userCorrected, !edge.pinned, edge.restoreApplication?.origin != .explicit,
                   evidence.lastSeen >= edge.lastSeen else { continue }
             relationships[thread]?.removeValue(forKey: evidence.resource.id)
         }
@@ -106,7 +115,7 @@ public actor ThreadGraphStore {
         }
     }
 
-    private func orderedThreads() -> [ThreadDomain.Thread] {
+    func orderedThreads() -> [ThreadDomain.Thread] {
         threads.values.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned }
             if $0.lastActiveAt != $1.lastActiveAt { return $0.lastActiveAt > $1.lastActiveAt }
@@ -115,17 +124,6 @@ public actor ThreadGraphStore {
     }
 
     public func details() -> [ThreadDetail] { orderedThreads().map { makeDetail($0) } }
-
-    func summaryRows(limit: Int) -> [ThreadSummary] {
-        orderedThreads().filter { !$0.isArchived }.prefix(limit).map { thread in
-            let edges = relationships[thread.id, default: [:]].values.filter { $0.status == .confirmed }
-            let names = Set(edges.compactMap { edge -> String? in
-                guard case .application(let app) = edge.resource else { return nil }
-                return app.name
-            }).sorted().prefix(3)
-            return ThreadSummary(thread: thread, resourceCount: edges.count, applications: Array(names))
-        }
-    }
 
     func destinationRows(query: String, excluding thread: ThreadID, limit: Int) -> [ThreadDomain.Thread] {
         let text = String(query.prefix(256)).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -136,7 +134,7 @@ public actor ThreadGraphStore {
 
     public func detail(_ id: ThreadID) -> ThreadDetail? { threads[id].map { makeDetail($0) } }
 
-    private func makeDetail(_ thread: ThreadDomain.Thread) -> ThreadDetail {
+    func makeDetail(_ thread: ThreadDomain.Thread) -> ThreadDetail {
         ThreadDetail(thread: thread, resources: relationships[thread.id, default: [:]].values.sorted {
             if $0.firstSeen != $1.firstSeen { return $0.firstSeen < $1.firstSeen }
             return stableKey($0.resource.id).lexicographicallyPrecedes(stableKey($1.resource.id))
@@ -221,7 +219,7 @@ public actor ThreadGraphStore {
                 existing.confidence = confidence; existing.status = status
                 existing.membershipRecordID = membershipRecordID
             }
-            if !existing.userCorrected && !existing.pinned { existing.persistence = persistence }
+            if !existing.userCorrected && !existing.pinned && existing.restoreApplication?.origin != .explicit { existing.persistence = persistence }
             relationships[thread]?[id] = existing
         } else {
             relationships[thread, default: [:]][id] = ThreadResource(resource: evidence.resource, confidence: confidence,

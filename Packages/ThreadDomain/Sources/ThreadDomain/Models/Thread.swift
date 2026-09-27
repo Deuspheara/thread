@@ -48,10 +48,11 @@ public struct ThreadResource: Equatable, Codable, Sendable {
     public var persistence: PersistenceDisposition
     /// The latest accepted inferred membership record; absent after explicit reassignment.
     public var membershipRecordID: DecisionRecordID?
+    public var restoreApplication: RestoreApplication?
 
     public init(resource: Resource, confidence: Double, firstSeen: Date, lastSeen: Date, source: ActivitySourceID,
                 status: MembershipStatus, pinned: Bool = false, userCorrected: Bool = false,
-                persistence: PersistenceDisposition = .durable, membershipRecordID: DecisionRecordID? = nil) {
+                persistence: PersistenceDisposition = .durable, membershipRecordID: DecisionRecordID? = nil, restoreApplication: RestoreApplication? = nil) {
         self.resource = resource
         self.confidence = confidence
         self.firstSeen = firstSeen
@@ -62,10 +63,11 @@ public struct ThreadResource: Equatable, Codable, Sendable {
         self.userCorrected = userCorrected
         self.persistence = persistence
         self.membershipRecordID = membershipRecordID
+        self.restoreApplication = restoreApplication
     }
 
     private enum CodingKeys: String, CodingKey {
-        case resource, confidence, firstSeen, lastSeen, source, status, pinned, userCorrected, persistence, membershipRecordID
+        case resource, confidence, firstSeen, lastSeen, source, status, pinned, userCorrected, persistence, membershipRecordID, restoreApplication
     }
 
     public init(from decoder: any Decoder) throws {
@@ -80,6 +82,7 @@ public struct ThreadResource: Equatable, Codable, Sendable {
         userCorrected = try values.decode(Bool.self, forKey: .userCorrected)
         persistence = try values.decodeIfPresent(PersistenceDisposition.self, forKey: .persistence) ?? .durable
         membershipRecordID = try values.decodeIfPresent(DecisionRecordID.self, forKey: .membershipRecordID)
+        restoreApplication = try values.decodeIfPresent(RestoreApplication.self, forKey: .restoreApplication)
     }
 
 }

@@ -6,7 +6,10 @@ import ThreadDomain
 @MainActor @Observable
 public final class ThreadDetailModel {
     public var presented = false
+    public var observingActions = false
     public var title = ""
+    public var choosingApplication = false
+    public private(set) var resumePlan: ThreadResumePlan?
     public private(set) var selected: ThreadDetail?
     public private(set) var destinations: [ThreadDomain.Thread] = []
     public private(set) var busy = false
@@ -39,24 +42,47 @@ public final class ThreadDetailModel {
     }
 
     public func update(_ overview: ThreadPresentation) {
-        guard presented else { return }
+        guard presented || observingActions else { return }
         reload()
     }
 
+    public func prepareActions(_ id: ThreadID) {
+        select(id)
+    }
+
     public func open(_ id: ThreadID) {
+        if selectedID == id, selected != nil { presented = true; return }
+        select(id)
+        presented = true
+    }
+
+    private func select(_ id: ThreadID) {
         selectedID = id
         selected = nil
+        resumePlan = nil
         title = ""
         message = nil
         destinationQuery = ""
         destinations = []
         revision += 1
         readTask?.cancel()
-        presented = true
     }
 
     public func refresh() async {
+        let requestedID = selectedID
         await readPage(after: nil)
+        guard selectedID == requestedID, !Task.isCancelled else { return }
+        let request = revision
+        if resumePlan == nil, let selected, nextResource == nil {
+            resumePlan = ThreadResumePlan(selected)
+        } else if resumePlan == nil, let id = selectedID {
+            do {
+                let plan = try await reading.resumePlan(id)
+                if revision == request, selectedID == id, !Task.isCancelled { resumePlan = plan }
+            } catch {
+                if revision == request, !Task.isCancelled { message = "Resume preview unavailable. Reopen this Thread to retry." }
+            }
+        }
         await refreshDestinations()
     }
 
@@ -101,6 +127,7 @@ public final class ThreadDetailModel {
             if selected == nil { title = page.thread.title }
             selected = ThreadDetail(thread: page.thread,
                 resources: previous + page.resources.filter { !existing.contains($0.resource.id) })
+            resumePlan = page.resumePlan
             totalResourceCount = page.totalResourceCount
             nextResource = page.next
         } catch {
@@ -143,6 +170,26 @@ public final class ThreadDetailModel {
             message = result
         }
     }
+
+    public func chooseApplication(_ application: RestoreApplication, for resource: ResourceID) async {
+        guard let thread = selected?.thread.id else { return }
+        await apply(.chooseApplication(resource, in: thread, application: application))
+    }
+
+    public func itemTitle(_ target: RestoreTarget) -> String {
+        guard case .file(let file) = target.resource, !target.isProject else { return ResourceLabel().compactTitle(target.resource) }
+        let roots = selected?.resources.compactMap { ThreadResumePlan.directory($0.resource) } ?? []
+        if let root = roots.filter({ file.path.hasPrefix($0 + "/") }).max(by: { $0.count < $1.count }) {
+            return String(file.path.dropFirst(root.count + 1))
+        }
+        return ResourceLabel().compactTitle(target.resource)
+    }
+
+    public var groups: [ThreadApplicationGroup] {
+        resumePlan?.groups ?? []
+    }
+
+    public var context: String { selected.map { ThreadWorkSummary($0).context } ?? "" }
 
     public func reassign(_ resource: ResourceID, to target: ThreadID) async {
         guard let source = selected?.thread.id else { return }

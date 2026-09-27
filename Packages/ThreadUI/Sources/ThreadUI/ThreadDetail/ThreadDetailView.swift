@@ -1,79 +1,111 @@
 import SwiftUI
 import ThreadDomain
 
-/// Exposes rename, archive and explicit resource correction without inference logic.
+/// Presents application-grouped resume destinations inside the native launcher.
 public struct ThreadDetailView: View {
-    @State private var split: ThreadSplitModel?
-    @State private var mergeDestination: ThreadDomain.Thread?
     @Bindable private var model: ThreadDetailModel
-    public init(model: ThreadDetailModel) { self.model = model }
-
+    private let restoration: ThreadRestoreModel?
+    private let actions: (() -> Void)?
+    @State private var showingActions = false
+    public init(model: ThreadDetailModel, restoration: ThreadRestoreModel? = nil, actions: (() -> Void)? = nil) {
+        self.model = model; self.restoration = restoration; self.actions = actions
+    }
     public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Thread details").font(.headline)
-                Spacer()
-                Button("Done") { model.presented = false }.keyboardShortcut(.cancelAction)
-            }
-            if model.loading { ProgressView().controlSize(.small) }
-            if let detail = model.selected {
-                HStack {
-                    TextField("Title", text: $model.title)
-                    Button("Rename") { Task { await model.rename() } }
-                        .disabled(model.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.title.count > 160)
-                }
-                Button(detail.thread.isPinned ? "Unpin Thread" : "Pin Thread") {
-                    Task { await model.togglePin() }
-                }
-                Button(detail.thread.isArchived ? "Unarchive Thread" : "Archive Thread") {
-                    Task { await model.toggleArchive() }
-                }
-                TextField("Search destination Threads", text: $model.destinationQuery)
-                Menu("Merge into…") {
-                    ForEach(model.destinations, id: \.id) { target in
-                        Button(target.title) { mergeDestination = target }
-                    }
-                }.disabled(detail.thread.isArchived || model.destinations.isEmpty)
-                Button("Split resources…") { split = model.makeSplit() }
-                    .disabled(detail.thread.isArchived || detail.resources.count < 2)
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(detail.resources, id: \.resource.id) { edge in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(ResourceLabel().title(edge.resource)).lineLimit(2)
-                                    Text("\(ResourceLabel().kind(edge.resource)) · \(edge.userCorrected ? "Assigned by you" : edge.status == .provisional ? "Provisional" : "Inferred")")
-                                        .font(.caption).foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            header
+            Divider()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if model.loading { ProgressView().controlSize(.small) }
+                    ForEach(model.groups) { group in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 10) {
+                                ApplicationIcon(application: group.application)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(group.application.name).font(.system(size: 14, weight: .semibold))
+                                    Text(group.description).font(.system(size: 11)).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Menu("Move to") {
-                                    ForEach(model.destinations, id: \.id) { target in
-                                        Button(target.title) { Task { await model.reassign(edge.resource.id, to: target.id) } }
+                                Menu {
+                                    ForEach(group.targets, id: \.resource.id) { target in
+                                        Menu(model.itemTitle(target)) {
+                                            ThreadItemActions(resource: target.resource, model: model)
+                                        }
                                     }
-                                }.disabled(model.destinations.isEmpty)
-                                    .accessibilityLabel("Move \(ResourceLabel().kind(edge.resource)) to another Thread")
+                                } label: { Image(systemName: "ellipsis") }
+                                .menuStyle(.borderlessButton).fixedSize().frame(width: 24, height: 28)
+                                .accessibilityLabel("Actions for \(group.application.name) items")
+                            }
+                            ForEach(group.targets, id: \.resource.id) { target in
+                                ThreadItemRow(target: target, model: model).padding(.leading, 38)
                             }
                         }
+                        Divider()
                     }
-                }.frame(maxHeight: 300)
-                Text("\(detail.resources.count) of \(model.totalResourceCount) resources").font(.caption)
-                if model.nextResource != nil {
-                    Button("Load more resources") { Task { await model.loadMore() } }
-                        .disabled(model.loading)
+                    if model.groups.isEmpty && !model.loading { Text("No confirmed resume targets.").foregroundStyle(.secondary) }
+                    if let selected = model.selected {
+                        if !model.context.isEmpty {
+                            Label("\(model.context) · observed", systemImage: "arrow.triangle.branch")
+                                .font(.system(size: 11)).foregroundStyle(.secondary)
+                        }
+                        DisclosureGroup("Other observed metadata") {
+                            let shown = Set(model.groups.flatMap(\.targets).map(\.resource.id))
+                            ForEach(selected.resources.filter { !shown.contains($0.resource.id) }, id: \.resource.id) { edge in
+                                ThreadItemRow(target: RestoreTarget(resource: edge.resource), model: model)
+                                    .help(edge.status == .provisional ? "Provisional evidence; excluded from resume" : "Supporting metadata; excluded from duplicate resume operations")
+                            }
+                        }.font(.system(size: 11)).foregroundStyle(.secondary)
+                    }
+                    if model.nextResource != nil {
+                        Button("Load more observed items") { Task { await model.loadMore() } }.disabled(model.loading)
+                    }
+                }.padding(18)
+            }
+            Divider()
+            HStack {
+                if let message = model.message { Text(message).lineLimit(1).help(message) }
+                else if let message = restoration?.message { Text(message).lineLimit(1).help(message) }
+                Spacer()
+                if let restoration, !restoration.items.isEmpty {
+                    Button("Resume details") { restoration.showingOutcomes = true }
+                }
+                Button("⌘K Actions", action: openActions).keyboardShortcut("k")
+            }.font(.system(size: 11)).foregroundStyle(.secondary).buttonStyle(.plain)
+                .padding(.horizontal, 18).frame(height: 36)
+        }
+        .frame(width: 700, height: 550)
+        .task(id: model.selectedID) { await model.refresh() }
+        .onExitCommand { model.presented = false }
+        .sheet(isPresented: Binding(get: { restoration?.showingOutcomes ?? false },
+                                   set: { restoration?.showingOutcomes = $0 })) {
+            if let restoration { ResumeOutcomesView(model: restoration) }
+        }
+        .popover(isPresented: $showingActions) {
+            ThreadActionPanel(model: model, restoration: restoration, dismiss: { showingActions = false }, details: { showingActions = false })
+        }
+    }
+    private func openActions() {
+        if let actions { actions() } else { showingActions = true }
+    }
+    private var header: some View {
+        HStack(spacing: 12) {
+            Button { model.presented = false } label: { Image(systemName: "chevron.left").frame(width: 26, height: 32) }
+                .buttonStyle(.plain).accessibilityLabel("Back to Threads")
+            VStack(alignment: .leading, spacing: 3) {
+                Text(model.selected?.thread.title ?? "Thread").font(.system(size: 16, weight: .semibold)).lineLimit(1)
+                if !model.context.isEmpty { Text(model.context).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1) }
+            }
+            Spacer()
+            if let thread = model.selected?.thread {
+                Text(thread.lastActiveAt, style: .relative).font(.system(size: 11)).foregroundStyle(.secondary)
+                if let restoration {
+                    Button("Resume") {
+                        Task { await restoration.restore(thread.id, title: thread.title, plan: model.resumePlan) }
+                    }.buttonStyle(.plain).disabled(thread.isArchived || restoration.busy).keyboardShortcut(.defaultAction)
                 }
             }
-            if let message = model.message { Text(message).font(.caption).foregroundStyle(.secondary) }
-        }
-        .task(id: model.selectedID) { await model.refresh() }
-        .disabled(model.busy)
-        .padding(20).frame(width: 480)
-        .sheet(item: $split) { ThreadSplitView(model: $0) }
-        .alert("Merge Threads?", isPresented: Binding(get: { mergeDestination != nil },
-               set: { if !$0 { mergeDestination = nil } }), presenting: mergeDestination) { target in
-            Button("Merge") { Task { await model.merge(into: target.id) } }
-            Button("Cancel", role: .cancel) { mergeDestination = nil }
-        } message: { target in
-            Text("Combine these resources into “\(target.title)” and archive this Thread. Previously saved history remains.")
-        }
+            Button(action: openActions) { Image(systemName: "ellipsis").frame(width: 26, height: 32) }
+                .buttonStyle(.plain).accessibilityLabel("Thread actions")
+        }.padding(.horizontal, 18).frame(height: 66)
     }
 }

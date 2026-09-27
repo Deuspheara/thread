@@ -7,6 +7,7 @@ public enum ThreadEdit: Codable, Sendable {
     case rename(ThreadID, title: String)
     case archive(ThreadID, archived: Bool)
     case reassign(ResourceID, from: ThreadID, to: ThreadID)
+    case chooseApplication(ResourceID, in: ThreadID, application: RestoreApplication)
 }
 
 public enum ThreadEditError: Error, Codable, Sendable {

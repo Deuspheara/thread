@@ -28,7 +28,7 @@ enum AppComposition {
             save: { try await client.remoteApply($0, token: $1) }, disable: { try await client.remoteDisable() },
             forget: { try await client.remoteForget() })
         return ObservationRuntime(model: model, exclusions: exclusions, remoteInference: remote,
-            restoration: ThreadRestoreModel(restoring: client), switcher: SwitcherModel(search: client),
+            restoration: ThreadRestoreModel(restoring: client), switcher: SwitcherModel(search: client, reading: client),
             search: ThreadSearchModel(search: client), activity: client)
     }
 

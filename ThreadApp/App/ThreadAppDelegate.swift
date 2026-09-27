@@ -12,6 +12,9 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
         refreshAccess: { [weak self] in self?.runtime.model.refresh() },
         requestAccess: { [weak self] in self?.runtime.model.requestPermission() })
     private lazy var welcome = OnboardingWindow(model: onboarding)
+    #if DEBUG
+    private var launcherPreview: LauncherPreviewFixture?
+    #endif
     private var terminating = false
     let updates = AppUpdateChecks(bundle: .main)
     let loginLaunch = AppComposition.makeLoginLaunch()
@@ -20,6 +23,9 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
     private var shortcut: SwitcherShortcut?
 
     func showSwitcher() {
+        #if DEBUG
+        if let launcherPreview { launcherPreview.show(); return }
+        #endif
         if onboarding.hasStarted { panel.toggle() } else { showOnboarding() }
     }
 
@@ -28,6 +34,11 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         if AgentProbeLaunch.runIfRequested() { return }
         #if DEBUG
+        if let preview = LauncherPreviewFixture.makeIfRequested() {
+            launcherPreview = preview
+            preview.show()
+            return
+        }
         if AgentCredentialFixture.runIfRequested() { return }
         if AgentFileRestoreFixture.runIfRequested() { return }
         if AgentRuntimeFixture.runIfRequested() { return }
@@ -42,6 +53,9 @@ final class ThreadAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows visible: Bool) -> Bool {
+        #if DEBUG
+        if let launcherPreview { launcherPreview.show(); return false }
+        #endif
         if !visible {
             if onboarding.hasStarted { panel.show() } else { showOnboarding() }
             return false

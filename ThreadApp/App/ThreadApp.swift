@@ -35,7 +35,7 @@ struct ThreadApp: App {
                     .keyboardShortcut("q")
                     .padding(12)
             }
-            .sheet(isPresented: $detail.presented, onDismiss: { Task { await delegate.runtime.search.refresh() } }) { ThreadDetailView(model: detail) }
+            .sheet(isPresented: $detail.presented, onDismiss: { Task { await delegate.runtime.search.refresh() } }) { ThreadDetailView(model: detail, restoration: delegate.runtime.restoration) }
         }
         .menuBarExtraStyle(.window)
         Settings {

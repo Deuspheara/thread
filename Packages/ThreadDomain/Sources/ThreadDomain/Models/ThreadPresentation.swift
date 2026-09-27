@@ -5,10 +5,12 @@ public struct ThreadSummary: Equatable, Codable, Sendable {
     public let thread: Thread
     public let resourceCount: Int
     public let applications: [String]
-    public init(thread: Thread, resourceCount: Int, applications: [String]) {
+    public let work: ThreadWorkSummary?
+    public init(thread: Thread, resourceCount: Int, applications: [String], work: ThreadWorkSummary? = nil) {
         self.thread = thread
         self.resourceCount = resourceCount
         self.applications = applications
+        self.work = work
     }
 }
 

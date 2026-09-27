@@ -13,7 +13,7 @@ struct ThreadRestorationTests {
                            source: ActivitySourceID(rawValue: "test"), status: .confirmed)
         }
         let detail = ThreadDetail(thread: ThreadDomain.Thread(id: ThreadID(rawValue: UUID()), title: "Work", createdAt: time, lastActiveAt: time), resources: resources)
-        #expect(RestorePlan().resources(detail) == [terminal])
+        #expect(ThreadResumePlan(detail).targets.map(\.resource) == [terminal])
     }
 
     @Test func directoryAliasesUseInjectedIdentityAndPreserveTheSelectedResource() {
@@ -27,8 +27,8 @@ struct ThreadRestorationTests {
         }
         let detail = ThreadDetail(thread: ThreadDomain.Thread(id: ThreadID(rawValue: UUID()), title: "Work",
             createdAt: time, lastActiveAt: time), resources: edges)
-        let plan = RestorePlan(directoryIdentity: { $0 == "/tmp/fixture" ? "/private/tmp/fixture" : $0 })
-        #expect(plan.resources(detail) == [terminal, other])
+        let plan = ThreadResumePlan(detail, directoryIdentity: { $0 == "/tmp/fixture" ? "/private/tmp/fixture" : $0 })
+        #expect(plan.targets.map(\.resource) == [terminal, other])
     }
 
     @Test func failureDoesNotStopOtherResourcesAndProvisionalEdgesAreExcluded() async throws {
@@ -45,7 +45,7 @@ struct ThreadRestorationTests {
         let adapter = RecordingRestorer()
         let restoration = ThreadRestoration(graph: graph, restorers: [adapter])
         let report = try await restoration.restore(id)
-        #expect(report.results.map(\.outcome) == [.failed, .restored, .unavailable])
+        #expect(report.results.map(\.outcome) == [.unknown, .restored, .unavailable])
         #expect(await adapter.paths == ["/a-failed", "/b-restored"])
         await #expect(throws: ThreadRestoreError.self) { try await restoration.restore(ThreadID(rawValue: UUID())) }
     }

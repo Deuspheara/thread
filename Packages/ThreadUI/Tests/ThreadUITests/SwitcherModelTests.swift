@@ -55,6 +55,27 @@ struct SwitcherModelTests {
         #expect(model.selection == first.id)
     }
 
+    @Test func aLatePreviewCannotOverwriteNewIntentForTheSameSelectedThread() async throws {
+        let reading = DelayedPreview()
+        let model = SwitcherModel(search: DelayedSearch(), reading: reading)
+        let summary = ThreadSummary(thread: reading.thread, resourceCount: 1, applications: [])
+        let overview = ThreadPresentation(threads: [summary], active: reading.thread.id)
+        model.update(overview)
+        let old = Task { await model.loadPreview() }
+        await reading.waitForRequest(1)
+        model.update(overview)
+        let current = Task { await model.loadPreview() }
+        await reading.waitForRequest(2)
+        await reading.finish(0, application: "dev.zed.Zed")
+        await old.value
+        #expect(model.preview == nil)
+        #expect(model.previewLoading)
+        await reading.finish(1, application: "com.microsoft.VSCode")
+        await current.value
+        #expect(model.preview?.targets.first?.application?.identity.bundleIdentifier == "com.microsoft.VSCode")
+        #expect(!model.previewLoading)
+    }
+
     @Test func archivedOrRemovedSelectionFallsBackToAvailableRecentWork() {
         let model = SwitcherModel(search: DelayedSearch())
         let first = ThreadID(rawValue: UUID()), second = ThreadID(rawValue: UUID())
@@ -91,5 +112,34 @@ private actor DelayedSearch: ThreadSearch {
     func finish(_ results: [ThreadSearchResult]) {
         request?.resume(returning: results)
         request = nil
+    }
+}
+
+
+private actor DelayedPreview: ThreadReading {
+    nonisolated let thread = ThreadDomain.Thread(id: ThreadID(rawValue: UUID()), title: "Fixture",
+        createdAt: Date(timeIntervalSince1970: 100), lastActiveAt: Date(timeIntervalSince1970: 100))
+    private var requests: [CheckedContinuation<ThreadDetailPage?, Never>] = []
+    private var observer: CheckedContinuation<Void, Never>?
+    private var expected = 0
+    func recentSummaries(limit: Int) -> [ThreadSummary] { [] }
+    func destinations(query: String, excluding thread: ThreadID, limit: Int) -> [ThreadDomain.Thread] { [] }
+    func detailPage(_ id: ThreadID, after resource: ResourceID?, limit: Int) async -> ThreadDetailPage? {
+        await withCheckedContinuation { continuation in
+            requests.append(continuation)
+            if requests.count >= expected { observer?.resume(); observer = nil }
+        }
+    }
+    func waitForRequest(_ count: Int) async {
+        guard requests.count < count else { return }
+        expected = count
+        await withCheckedContinuation { observer = $0 }
+    }
+    func finish(_ index: Int, application: String) {
+        let preference = RestoreApplication(identity: ApplicationIdentity(bundleIdentifier: application), name: application, origin: .explicit)
+        let edge = ThreadResource(resource: .file(FileIdentity(path: "/fixture/shared.swift")), confidence: 1,
+            firstSeen: thread.createdAt, lastSeen: thread.lastActiveAt, source: ActivitySourceID(rawValue: "fixture"),
+            status: .confirmed, restoreApplication: preference)
+        requests[index].resume(returning: ThreadDetailPage(thread: thread, resources: [edge], totalResourceCount: 1, next: nil))
     }
 }

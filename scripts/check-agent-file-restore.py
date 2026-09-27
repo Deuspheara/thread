@@ -11,12 +11,15 @@ ROOT = Path(__file__).resolve().parent.parent
 BINARY = ROOT / 'build/Thread.app/Contents/MacOS/Thread'
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--switcher', action='store_true', help='Also reopen saved history for keyboard restoration through the UI')
+parser.add_argument("--application", help="Open the disposable file in this explicit application bundle identifier")
 arguments = parser.parse_args()
 
 with tempfile.TemporaryDirectory(prefix='th-agent-file-restore-', dir='/private/tmp') as temporary:
     directory = Path(temporary) / 'data'
     directory.mkdir(mode=0o700)
     environment = dict(os.environ, THREAD_DATA_DIRECTORY=str(directory), THREAD_AGENT_FILE_RESTORE_CHECK='1')
+    if arguments.application:
+        environment["THREAD_FILE_RESTORE_APPLICATION"] = arguments.application
     for name in ('THREAD_AGENT_PROBE', 'THREAD_AGENT_RUNTIME_CHECK', 'THREAD_SKIP_ONBOARDING'):
         environment.pop(name, None)
     process = subprocess.Popen([str(BINARY)], env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -30,7 +33,7 @@ with tempfile.TemporaryDirectory(prefix='th-agent-file-restore-', dir='/private/
         with sqlite3.connect(f'file:{directory / "Thread.sqlite"}?mode=ro', uri=True) as database:
             assert database.execute('SELECT COUNT(*) FROM threads WHERE title = ?', ('Saved file fixture',)).fetchone()[0] == 1
         print('Actual saved Thread → AgentClient → helper → file adapter returned restored.', flush=True)
-        print('Inspect TextEdit document:', directory / 'SavedThreadRestore.txt', flush=True)
+        print('Inspect preferred application document:' if arguments.application else 'Inspect default-application document:', directory / 'SavedThreadRestore.txt', flush=True)
         input('After verifying the visible fixture contents and closing its document, press Enter to continue: ')
         if arguments.switcher:
             marker = directory / 'OnboardingComplete'
